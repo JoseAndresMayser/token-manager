@@ -51,7 +51,7 @@ public class TokenManager {
             calendar.add(request.getExpirationTimeType().getValue(), request.getExpirationTimeAmount());
             Date expirationTime = calendar.getTime();
             Date currentDate = new Date();
-            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+            JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                     .subject(request.getSubject())
                     .issuer("web")
                     .expirationTime(expirationTime)
@@ -63,7 +63,7 @@ public class TokenManager {
             RSAPrivateKey rsaPrivateKey = (RSAPrivateKey) rsaKeyManager.getPrivateKey();
             JWSSigner jwsSigner = new RSASSASigner(rsaPrivateKey);
             JWSObject jwsObject =
-                    new JWSObject(new JWSHeader(JWSAlgorithm.RS256), new Payload(claimsSet.toJSONObject()));
+                    new JWSObject(new JWSHeader(JWSAlgorithm.RS256), new Payload(jwtClaimsSet.toJSONObject()));
             jwsObject.sign(jwsSigner);
             return new TokenResponse(jwsObject.serialize(), expirationTime);
         } catch (KeysException e) {
@@ -74,13 +74,20 @@ public class TokenManager {
     }
 
     public Boolean tokenIsValid(String token) throws TokenValidationException {
+        return !tokenExpired(token) && tokenIntegrityIsValid(token);
+    }
+
+    public Boolean tokenExpired(String token) throws TokenValidationException {
         try {
-            SignedJWT signedJwt = parseTokenToSignedJwt(token);
-            JWTClaimsSet jwtClaimsSet = signedJwt.getJWTClaimsSet();
-            Date expirationTime = jwtClaimsSet.getExpirationTime();
-            RSAPublicKey rsaPublicKey = (RSAPublicKey) rsaKeyManager.getPublicKey();
-            JWSVerifier jwsVerifier = new RSASSAVerifier(rsaPublicKey);
-            return !expirationTime.before(new Date()) && signedJwt.verify(jwsVerifier);
+            return SignedJWT.parse(token).getJWTClaimsSet().getExpirationTime().before(new Date());
+        } catch (ParseException e) {
+            throw new TokenValidationException("Could not parse token.", e);
+        }
+    }
+
+    public Boolean tokenIntegrityIsValid(String token) throws TokenValidationException {
+        try {
+            return SignedJWT.parse(token).verify(new RSASSAVerifier((RSAPublicKey) rsaKeyManager.getPublicKey()));
         } catch (ParseException e) {
             throw new TokenValidationException("Could not parse token.", e);
         } catch (PublicKeyReadException e) {
@@ -92,17 +99,11 @@ public class TokenManager {
 
     public <Data> Data getDataFromToken(String token, Class<Data> dataClass) throws TokenDataException {
         try {
-            SignedJWT signedJwt = parseTokenToSignedJwt(token);
-            JWTClaimsSet jwtClaimsSet = signedJwt.getJWTClaimsSet();
-            String dataString = jwtClaimsSet.getClaim(DATA_KEY).toString();
-            return new Gson().fromJson(dataString, dataClass);
+            return new Gson()
+                    .fromJson(SignedJWT.parse(token).getJWTClaimsSet().getClaim(DATA_KEY).toString(), dataClass);
         } catch (ParseException e) {
             throw new TokenDataException("Could not parse token.", e);
         }
-    }
-
-    private SignedJWT parseTokenToSignedJwt(String token) throws ParseException {
-        return SignedJWT.parse(token);
     }
 
     private static final String DATA_KEY = "data";
