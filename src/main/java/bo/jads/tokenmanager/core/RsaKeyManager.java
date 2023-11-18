@@ -10,15 +10,19 @@ class RsaKeyManager {
     private String privateKeyPath;
     private String publicKeyPath;
 
-    public void initialize(String privateKeyPath, String publicKeyPath) {
+    public void initialize(String privateKeyPath, String publicKeyPath) throws KeysException {
+        if (privateKeyPath == null || privateKeyPath.isBlank()) {
+            throw new KeysException("The private key path must not be null or empty.");
+        }
+        if (publicKeyPath == null || publicKeyPath.isBlank()) {
+            throw new KeysException("The public key path must not be null or empty.");
+        }
         this.privateKeyPath = privateKeyPath;
         this.publicKeyPath = publicKeyPath;
     }
 
     public Boolean keysExist() {
-        File privateKeyFile = new File(privateKeyPath);
-        File publicKeyFile = new File(publicKeyPath);
-        return privateKeyFile.exists() && publicKeyFile.exists();
+        return new File(privateKeyPath).exists() && new File(publicKeyPath).exists();
     }
 
     public void generateKeys() throws KeysGenerationException {
@@ -40,24 +44,16 @@ class RsaKeyManager {
     }
 
     public PrivateKey getPrivateKey() throws PrivateKeyReadException {
-        if (privateKeyPath == null || privateKeyPath.isBlank()) {
-            throw new PrivateKeyReadException("The private key path must not be null or empty.");
-        }
         try {
-            ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(privateKeyPath));
-            return (PrivateKey) objectInputStream.readObject();
+            return (PrivateKey) new ObjectInputStream(new FileInputStream(privateKeyPath)).readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new PrivateKeyReadException(e);
         }
     }
 
     public PublicKey getPublicKey() throws PublicKeyReadException {
-        if (publicKeyPath == null || publicKeyPath.isBlank()) {
-            throw new PublicKeyReadException("The public key path must not be null or empty.");
-        }
         try {
-            ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(publicKeyPath));
-            return (PublicKey) objectInputStream.readObject();
+            return (PublicKey) new ObjectInputStream(new FileInputStream(publicKeyPath)).readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new PublicKeyReadException(e);
         }

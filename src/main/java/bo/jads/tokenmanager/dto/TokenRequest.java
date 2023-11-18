@@ -12,9 +12,6 @@ import lombok.Setter;
 @Setter
 public class TokenRequest<Data> {
 
-    private String privateKeyPath;
-    private String publicKeyPath;
-    private Boolean generateKeysIfNotExist;
     private String subject;
     private ExpirationTimeType expirationTimeType;
     private Integer expirationTimeAmount;
