@@ -6,7 +6,7 @@
 
     <groupId>bo.jads</groupId>
     <artifactId>token-manager</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.2</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

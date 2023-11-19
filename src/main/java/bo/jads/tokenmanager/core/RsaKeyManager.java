@@ -62,10 +62,8 @@ class RsaKeyManager {
     private File generatePrivateKeyFile() throws PrivateKeyGenerationException {
         File privateKeyFile = new File(privateKeyPath);
         File parentFile = privateKeyFile.getParentFile();
-        if (parentFile != null) {
-            if (!parentFile.mkdirs()) {
-                throw new PrivateKeyGenerationException();
-            }
+        if (parentFile != null && !parentFile.exists() && !parentFile.mkdirs()) {
+            throw new PrivateKeyGenerationException();
         }
         try {
             if (!privateKeyFile.createNewFile()) {
@@ -80,10 +78,8 @@ class RsaKeyManager {
     private File generatePublicKeyFile() throws PublicKeyGenerationException {
         File publicKeyFile = new File(publicKeyPath);
         File parentFile = publicKeyFile.getParentFile();
-        if (parentFile != null) {
-            if (!parentFile.mkdirs()) {
-                throw new PublicKeyGenerationException();
-            }
+        if (parentFile != null && !parentFile.exists() && !parentFile.mkdirs()) {
+            throw new PublicKeyGenerationException();
         }
         try {
             if (!publicKeyFile.createNewFile()) {
