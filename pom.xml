@@ -6,7 +6,7 @@
 
     <groupId>bo.jads</groupId>
     <artifactId>token-manager</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>9.37.1</version>
+            <version>9.40</version>
         </dependency>
     </dependencies>
 
